@@ -1,0 +1,62 @@
+mainDocDict = get(quoteData, _transaction_document_number, "dict<anytype>");
+v_taxPresent = get(mainDocDict, "_transaction_tax_isTaxPresent_t", "string");
+v_freezePrice = get(mainDocDict, "_transaction_freezePrice", "string");
+if (v_taxPresent == "true") {
+    v_isTaxInclusive = get(mainDocDict, "_transaction_tax_isTaxInclusive_t", "string");
+    document_number = get(lineDict, "_document_number", "string");
+    if (v_freezePrice <> "true") {
+        v__price_quantity = get(lineDict, "_price_quantity", "integer");
+        v_netPrice_l = get(lineDict, "netPrice_l", "float");
+        v_taxPrice_l = get(lineDict, "_tax_taxPrice_l", "float");
+        v_priceType_l = get(lineDict, "priceType_l", "string");
+  
+        if (v_isTaxInclusive == "true") {
+            // INCLUSIVE TAX
+            if (containskey(subDocOutputAttrs, "_tax_totalPrice_l")) {
+                totalPrice_l = v_netPrice_l;
+                if (v_priceType_l == "Usage") {
+                    totalPrice_l = 0.0;
+                }
+                put(lineDict, "_tax_totalPrice_l", totalPrice_l);
+            }
+            if (containskey(subDocOutputAttrs, "_tax_totalPriceMinusTax_l")) {
+                totalPriceMinusTax_l = v_netPrice_l - v_taxPrice_l;
+                if (v_priceType_l == "Usage") {
+                    totalPriceMinusTax_l = 0.0;
+                }
+                put(lineDict, "_tax_totalPriceMinusTax_l", totalPriceMinusTax_l);
+            }
+        } else {
+            // EXCLUSIVE TAX
+            if (containskey(subDocOutputAttrs, "_tax_totalPrice_l")) {
+                totalPrice_l = v_netPrice_l + v_taxPrice_l;
+                if (v_priceType_l == "Usage") {
+                    totalPrice_l = 0.0;
+                }
+                put(lineDict, "_tax_totalPrice_l", totalPrice_l);
+            }
+  
+            if (containskey(subDocOutputAttrs, "_tax_totalPriceMinusTax_l")) {
+                totalPriceMinusTax_l = v_netPrice_l;
+                if (v_priceType_l == "Usage") {
+                    totalPriceMinusTax_l = 0.0;
+                }
+                put(lineDict, "_tax_totalPriceMinusTax_l", totalPriceMinusTax_l);
+            }
+        }
+        v_totalPrice_l = get(lineDict, "_tax_totalPrice_l", "float");
+        if (containskey(subDocOutputAttrs, "_tax_totalAmount_l")) {
+            totalAmount_l = v_totalPrice_l * v__price_quantity;
+            put(lineDict, "_tax_totalAmount_l", totalAmount_l);
+        }
+  
+        v_totalPriceMinusTax_l = get(lineDict, "_tax_totalPriceMinusTax_l", "float");
+        if (containskey(subDocOutputAttrs, "_tax_totalAmountMinusTax_l")) {
+            totalAmountWithoutTax_l = v_totalPriceMinusTax_l * v__price_quantity;
+            put(lineDict, "_tax_totalAmountMinusTax_l", totalAmountWithoutTax_l);
+        }
+        put(quoteData, document_number, lineDict);
+    }
+  
+}
+return "";

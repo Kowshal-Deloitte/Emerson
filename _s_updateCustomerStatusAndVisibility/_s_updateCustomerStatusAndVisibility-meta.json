@@ -1,0 +1,11 @@
+{
+  "name" : "Update Customer Status And Visibility",
+  "variableName" : "_s_updateCustomerStatusAndVisibility",
+  "description" : "Updates Customer Status and Customer Visibility identifier attributes for buyer/customer.",
+  "libraryFunctions" : [ "commerce._s_stepToCustomerStatusAndVisibility" ],
+  "returnType" : "String",
+  "parameters" : [ ],
+  "subDocAttributes" : [ ],
+  "mainDocAttributes" : [ ],
+  "systemAttributes" : [ "_system_current_step_var" ]
+}

@@ -1,0 +1,14 @@
+returnStr = "";
+statusVisibilityMap = commerce._s_stepToCustomerStatusAndVisibility();
+statusMap = get(statusVisibilityMap,"CUSTOMER_STATUS_MAP");
+visibilityMap = get(statusVisibilityMap,"CUSTOMER_VISIBILITY_MAP");
+customerStatus = "";
+if(containskey(statusMap, _system_current_step_var)){
+	customerStatus = get(statusMap,_system_current_step_var);
+	returnStr = returnStr + "1~_transaction_s_customerStatus_t~" + customerStatus + "|";
+} 
+if(customerStatus <> "" AND NOT(isnull(customerStatus)) AND containskey(visibilityMap, customerStatus)){
+	customerVisibility = get(visibilityMap,customerStatus);
+	returnStr = returnStr + "1~_transaction_s_customerVisibilityIdentifier_t~" + customerVisibility + "|";
+}
+return returnStr;

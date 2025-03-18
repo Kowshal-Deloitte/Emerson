@@ -1,0 +1,11 @@
+{
+  "name" : "Publish And Notify Quote",
+  "variableName" : "_s_publishAndNotifyQuote",
+  "description" : "Publishes current quote on Oracle Commerce Cloud for the buyer to review and marks the quote as 'Published' in CPQ system.",
+  "libraryFunctions" : [ "commerce._s_generatePayloadForNotifyQuote", "commerce._s_getAccessTokenFromCommerceAppKey" ],
+  "returnType" : "String",
+  "parameters" : [ ],
+  "subDocAttributes" : [ ],
+  "mainDocAttributes" : [ "_transaction_s_isPublished_t" ],
+  "systemAttributes" : [ ]
+}

@@ -1,0 +1,11 @@
+{
+  "name" : "Validate Line Items Exist",
+  "variableName" : "_s_validateLineItemsExist",
+  "description" : "Checks if there are any line items existing in the transaction. Returns false if there are no line items in the transaction.",
+  "libraryFunctions" : [ ],
+  "returnType" : "Boolean",
+  "parameters" : [ ],
+  "subDocAttributes" : [ "_document_number" ],
+  "mainDocAttributes" : [ ],
+  "systemAttributes" : [ ]
+}

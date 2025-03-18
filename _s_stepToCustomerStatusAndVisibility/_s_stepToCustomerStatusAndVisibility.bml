@@ -1,0 +1,58 @@
+stepToStatusMap = dict("string");
+
+if(_transaction_s_transactionSource_t == "sellerInitiated"){
+    put(stepToStatusMap, "start_step",          	   ""); 	   // sellerInitated- blank
+    if(_transaction_s_isPublished_t){
+    	put(stepToStatusMap, "pending_process",            "negotiation"); // sellerInitiated & published- negotiation
+    	put(stepToStatusMap, "waitingForInternalApproval", "negotiation"); // sellerInitiated & published- negotiation
+    }else{
+    	put(stepToStatusMap, "pending_process",            "");            // sellerInitiated & not published- blank
+    	put(stepToStatusMap, "waitingForInternalApproval", ""); 	   // sellerInitiated & not published- blank
+    }
+} else {
+    put(stepToStatusMap, "start_step",          	   "solutionDiscovery"); // buyerInitiated- solutionDiscovery
+    put(stepToStatusMap, "pending_process",                "solutionDiscovery"); // buyerInitiated- solutionDiscovery
+    put(stepToStatusMap, "waitingForInternalApproval",     "negotiation");       // buyerInitiated- negotiation
+}
+put(stepToStatusMap, "approved",                    "negotiation");
+put(stepToStatusMap, "awaitingCustomerAcceptance",  "acceptance");
+if(_transaction_eSignatureAttributeSet_esig_status == "Cancelled"){
+	put(stepToStatusMap, "customerAccepted",    "signatureRequestCancelled");
+} else {
+	put(stepToStatusMap, "customerAccepted",    "acceptance");
+}
+put(stepToStatusMap, "waitingForSignature",         "awaitingSignatures"); //Applicable for digital signatures - awaitingSignatures
+put(stepToStatusMap, "signed",                      "signed"); 		   //Applicable for digital signatures - signed
+put(stepToStatusMap, "orderedBeingFulfilled",       "ordered");
+put(stepToStatusMap, "beingChangedCanceled",        "ordered");
+put(stepToStatusMap, "closedFulfilled",             "ordered");
+if(_transaction_eSignatureAttributeSet_esig_status == "Cancelled"){
+	put(stepToStatusMap, "canceled",            "signatureRequestCancelled");
+} else {
+	put(stepToStatusMap, "canceled",            "rejected");
+}
+put(stepToStatusMap, "rejectedByCustomer",          "rejected");
+put(stepToStatusMap, "alternateVersionOrdered",     "rejected");
+put(stepToStatusMap, "deleted",                     "rejected");
+
+
+statusToVisibilityMap = dict("string");
+put(statusToVisibilityMap, "",                 "0"); // nothing
+if(_transaction_s_transactionSource_t == "sellerInitiated"){
+	put(statusToVisibilityMap, "solutionDiscovery","1"); // header attributes only
+	put(statusToVisibilityMap, "negotiation",      "1"); // header attributes only
+}else{
+	put(statusToVisibilityMap, "solutionDiscovery","2"); // header, product attributes
+	put(statusToVisibilityMap, "negotiation",      "2"); // header, product attributes
+}
+put(statusToVisibilityMap, "acceptance",       "3"); // header, product and pricing attributes
+put(statusToVisibilityMap, "awaitingSignatures","3"); // header, product and pricing attributes
+put(statusToVisibilityMap, "signed",      	"3"); // header, product and pricing attributes
+put(statusToVisibilityMap, "ordered",          "3"); // header, product and pricing attributes
+put(statusToVisibilityMap, "signatureRequestCancelled", "2"); // header, product  attributes
+put(statusToVisibilityMap, "rejected",         "2"); // header, product attributes
+
+returnDict = dict("dict<string>");
+put(returnDict, "CUSTOMER_STATUS_MAP", stepToStatusMap);
+put(returnDict, "CUSTOMER_VISIBILITY_MAP", statusToVisibilityMap);
+return returnDict;

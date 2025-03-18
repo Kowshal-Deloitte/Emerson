@@ -1,0 +1,26 @@
+{
+  "name" : "Tax Calculations Convert Quote To Object",
+  "variableName" : "tax_calculations_convertQuoteToObject",
+  "description" : "System Function to to add the tax attribute values to the quote dictionary object to allow tax calculation updates. This function also initializes any attribute values as needed. It also updates the 'mainDocOutputAttrs' and 'subDocOutputAttrs' dictionaries that control the attributes updated for each document type. Functions starting with \"system\" prefix shouldn't be overridden. This will enable availability of upgrades to system logic. Instead override the ones that have a \"custom\" prefix to customize the behavior.",
+  "libraryFunctions" : [ ],
+  "returnType" : "String",
+  "parameters" : [ {
+    "name" : "mainDocOutputAttrs",
+    "type" : "String Dictionary"
+  }, {
+    "name" : "subDocOutputAttrs",
+    "type" : "String Dictionary"
+  }, {
+    "name" : "quoteData",
+    "type" : "Anytype Dictionary"
+  }, {
+    "name" : "lineNumbersArray",
+    "type" : "String[]"
+  }, {
+    "name" : "extraParams",
+    "type" : "Anytype Dictionary"
+  } ],
+  "subDocAttributes" : [ "_document_number", "_tax_taxPrice_l", "_tax_totalPrice_l", "_tax_totalAmount_l", "_tax_totalPriceMinusTax_l", "_tax_totalAmountMinusTax_l", "_tax_calculation_info" ],
+  "mainDocAttributes" : [ "_transaction_document_number", "_transaction_tax_isTaxPresent_t", "_transaction_tax_isTaxInclusive_t", "_transaction_tax_taxAmount_t" ],
+  "systemAttributes" : [ ]
+}

@@ -1,0 +1,11 @@
+{
+  "name" : "Step To Customer Status and Visibility Lookup",
+  "variableName" : "_s_stepToCustomerStatusAndVisibility",
+  "description" : "Provides a lookup for Current Step to Customer Status mapping and Customer Status to Customer Visibility Identifier.",
+  "libraryFunctions" : [ ],
+  "returnType" : "Dictionary of String Dictionaries",
+  "parameters" : [ ],
+  "subDocAttributes" : [ ],
+  "mainDocAttributes" : [ "_transaction_s_transactionSource_t", "_transaction_s_isPublished_t", "_transaction_eSignatureAttributeSet_esig_status" ],
+  "systemAttributes" : [ ]
+}

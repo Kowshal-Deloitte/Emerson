@@ -1,0 +1,70 @@
+contactPayload = json("{}");
+if(_transaction_s_contactPartyNumber_t <> ""){
+	jsonput(contactPayload,"partyNumber", _transaction_s_contactPartyNumber_t);
+} else{
+	if(contactEmailAddress_t == "") {
+		throwerror("Contact Email Address cannot be empty.");
+	}
+	jsonput(contactPayload,"email", contactEmailAddress_t);
+	jsonput(contactPayload,"firstName", contactFirstName_t);
+	jsonput(contactPayload,"lastName", contactLastName_t);
+}
+// contacts array
+contactsArray = jsonarray("[]");
+jsonarrayappend(contactsArray,contactPayload);
+ 
+// contactsArray -> organization
+organization = json("{}");
+jsonput(organization,"contacts", contactsArray);
+jsonput(organization,"partyId", _transaction_customer_id);
+ 
+// organization -> quoteToContacts
+quoteToContacts = json("{}");
+jsonput(quoteToContacts, "organization", organization);
+ 
+// quoteToContacts array
+quoteToContactsArray = jsonarray("[]");
+jsonarrayappend(quoteToContactsArray,quoteToContacts);
+ 
+quotePayload = json("{}");
+// add quoteId
+jsonput(quotePayload, "id", bs_id);
+jsonput(quotePayload, "quoteToContacts", quoteToContactsArray);
+ 
+//add quoteDetails
+quoteDetailsPayload=json("{}");
+jsonput(quoteDetailsPayload,"name",transactionName_t);
+jsonput(quoteDetailsPayload,"createdDate",createdDate_t);
+jsonput(quoteDetailsPayload,"createdBy",createdBy_t);
+jsonput(quoteDetailsPayload,"sellerName",owner_t);
+jsonput(quoteDetailsPayload,"sellerCompanyName",_transaction_s_hostCompanyFullName_t);
+jsonput(quoteDetailsPayload,"currencyCode",currency_t);
+jsonput(quoteDetailsPayload,"totalListAmount",totalOneTimeListAmount_t);
+jsonput(quoteDetailsPayload,"totalNetAmount",totalOneTimeNetAmount_t);
+jsonput(quoteDetailsPayload,"totalDiscount",totalOneTimeDiscount_t);
+jsonput(quoteDetailsPayload,"totalContractDiscount",totalContractDiscount_t);
+jsonput(quoteDetailsPayload,"totalContractValue",totalContractValue_t);
+jsonput(quoteDetailsPayload,"status", _transaction_s_customerStatus_t);
+ 
+// item details
+lineItems = jsonarray("[]");
+for item in transactionLine{
+    lineItem = json("{}");
+    if(item._part_number <> "") {
+    	jsonput(lineItem,"productId",item._part_number);
+    	jsonput(lineItem,"productName",item._part_display_number);
+    } else {
+    	jsonput(lineItem,"productId",item._model_variable_name);
+    	jsonput(lineItem,"productName",item._model_name);
+    }
+    jsonput(lineItem,"quantity",item._price_quantity);
+    jsonput(lineItem,"totalContractValue",item.contractValue_l);
+    jsonarrayappend(lineItems,lineItem);
+}
+jsonput(quoteDetailsPayload,"items",lineItems);
+jsonput(quotePayload, "quoteDetails", quoteDetailsPayload);
+ 
+quoteNotifyPayload = json("{}");
+jsonput(quoteNotifyPayload, "quote", quotePayload);
+// print quoteNotifyPayload;
+return quoteNotifyPayload;

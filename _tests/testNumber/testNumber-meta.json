@@ -1,0 +1,6 @@
+{
+    "name": "Test Quote Number",
+    "variableName": "testQuoteNumber",
+    "description": "Will make sure the quote number returns the correct string",
+    "libraryFunctions": ["commerce.quoteNumber"]
+  }

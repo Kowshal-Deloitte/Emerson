@@ -1,0 +1,24 @@
+loginUrl = "";
+if(endswith(baseUrl, "/") == startswith(loginEndpoint, "/")){ 
+	loginUrl = baseUrl + "/" + loginEndpoint;
+} else {
+	loginUrl = baseUrl + loginEndpoint;
+} 
+oauthBody = "grant_type=client_credentials";
+headersDict = dict("string");
+put(headersDict, "Content-Type", "application/x-www-form-urlencoded");
+put(headersDict, "Authorization", "Bearer " + appKey);
+
+oauthResponse = urldata(loginUrl, "POST", headersDict, oauthBody);
+//print oauthResponse;
+statusCode = get(oauthResponse,"Status-Code");
+
+if(statusCode <> "200"){
+	if(statusCode =="-1"){
+		throwerror("The request is taking longer than usual.");
+	} else{
+		throwerror("Authentication failed. Please contact your system administrator."); // placeholder
+	} 
+}
+accessToken = jsonget(json(get(oauthResponse, "Message-Body")), "access_token");
+return accessToken;

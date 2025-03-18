@@ -1,0 +1,90 @@
+ret = "";
+returnSb = stringbuilder();
+
+bsId = _system_buyside_id;
+siteName = _system_company_name + ".bigmachines.com";
+protocol = "https";
+siteUrl = protocol + "://" + siteName;
+restPath = "https://demo-partners.pricefx.com/pricefx/deloitte-demo/formulamanager.executeformula/CustomRestApi/?output=rawjson";
+//print restPath;
+
+headers = dict("string");
+products = dict("string");
+
+username = "deloitte-demo/OracleIntegration";
+password = "Start@123";
+
+authorization = "Basic " + encodebase64(username + ":" + password);
+put(headers, "Content-Type", "application/json");
+put(headers, "Authorization", authorization);
+
+
+requestjson = json();
+datajson = json();
+lineitemsJsonArr = jsonarray();
+
+
+for line in transactionline {
+
+  if (line._part_number <> ""){	// AND line._part_custom_field21 <> "") {
+    productID = line._part_number;
+    custID = customerID_t_c;
+    listPrice = line.listPrice_l;
+    docNumber = line._document_number;
+
+    put(products, docNumber, productID);
+
+    lineJson = json();
+    jsonput(lineJson, "product_id", productID);
+    jsonput(lineJson, "customer_id", custID);
+    jsonput(lineJson, "line_Item_Id", docNumber);
+    jsonput(lineJson, "list_price", listPrice);
+
+    /*jsonput(lineJson, "product_Id", "NC-0001");
+    jsonput(lineJson, "customer_Id", "CID-0014");
+    jsonput(lineJson, "line_Item_Id", "1");
+    jsonput(lineJson, "list_price", 200.00);*/
+
+    jsonarrayappend(lineitemsJsonArr, lineJson);
+  }
+}
+
+jsonput(dataJson, "quote_id", bsId);
+//jsonput(dataJson, "quote_id", "Q12345");
+jsonput(dataJson, "line_items", lineitemsJsonArr);
+
+jsonput(requestJson, "data", dataJson);
+// print requestJson;
+
+httpResponseDict = urldata(restPath, "POST", headers, jsontostr(requestJson), 100000);
+
+responseJson = json();
+if (get(httpResponseDict, "Status-Code") == "200") {
+
+  responseJson = json(get(httpResponseDict, "Message-Body"));		//print responseJson;
+  territory = jsonpathgetsingle(responseJson,"$.ResponseBody.data.quoteHeader.sales_Territory");	//print territory;
+  
+  sbappend(returnSb, "1", "~salesTerritory_c~", territory, "|");
+  
+  lineItemsArray = jsonpathgetsingle(responseJson, "$.ResponseBody.data.line_items", "jsonarray", jsonarray());	print lineItemsArray;	
+print "test123";
+  indexArray = range(jsonarraysize(lineItemsArray));
+
+  for index in indexArray {
+    lineItemsJson = jsonarrayget(lineItemsArray, index, "json");
+    documentNumber = jsonget(lineItemsJson, "line_Item_Id");
+    priceFloor = jsonget(lineItemsJson, "floor", "string", "0.0");
+    ceiling = jsonget(lineItemsJson, "ceiling", "string", "0.0");
+    target = jsonget(lineItemsJson, "target", "string", "0.0");
+
+    sbappend(returnSb, documentNumber, "~floor_l_c~", priceFloor, "|", documentNumber, "~ceiling_l_c~", ceiling, "|", documentNumber, "~target_l_c~", target, "|");
+  }
+
+  //documents = jsonget(Json(Response_Body),"documents","Json");
+  //print favoriteIds;
+
+}
+
+print "test successful";
+
+return sbtostring(returnSb);

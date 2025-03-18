@@ -1,0 +1,11 @@
+{
+  "name" : "TCA Account Integration",
+  "variableName" : "_s_tCAAccountIntegration",
+  "description" : "Invokes TCA getFinancialCustomerInfo API to retrieve Bill To, Sold To and Ship To customer information.",
+  "libraryFunctions" : [ ],
+  "returnType" : "String",
+  "parameters" : [ ],
+  "subDocAttributes" : [ ],
+  "mainDocAttributes" : [ "businessUnitId_t", "_transaction_customer_id", "_transaction_s_accountIntegrationResponse_t" ],
+  "systemAttributes" : [ ]
+}

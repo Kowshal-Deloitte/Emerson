@@ -1,0 +1,149 @@
+//  TCA Account Integration
+/////////////////////////////////////////
+//  Function Definition
+//  
+//  Imported MainDoc Attributes:
+//  "businessUnitId_t", "_transaction_customer_id"
+//  Returns string:
+//  Concatenation of docNum~AttributeVarName~AttributeValue strings in the format compatible with BML integration
+/////////////////////////////////////////
+
+// Get connection details stored in Generic Integration
+// Check if connection exists
+errorMsg = "";
+connectionInfo = bmql("select username,password,requestUrl from integration.genericIntegration where name = 'Fusion Account Integration'");
+if (hasError(connectionInfo)) {
+  errorMsg = "Error retrieving connection info from Integration Center Fusion Account Integration.";
+  return "1~_transaction_s_accountIntegrationResponse_t~" + errorMsg;
+}
+// Check if businessUnitId_t and _transaction_customer_id are populated
+if(isnull(businessUnitId_t)  OR businessUnitId_t  == "" OR 
+   isnull(_transaction_customer_id)  OR _transaction_customer_id  == "") {
+    errorMsg = "_transaction_customer_id and businessUnitId_t are required for TCA Account Integration.";
+    return "1~_transaction_s_accountIntegrationResponse_t~" + errorMsg;
+}
+fusionUrl = "";
+username = "";
+password = "";
+for info in connectionInfo{
+  username = get(info, "username");
+  password = get(info, "password");
+  fusionUrl = get(info, "requestUrl");
+}
+payload = json();
+jsonput(payload, "BusinessUnitId", businessUnitId_t);
+jsonput(payload, "PartyId", _transaction_customer_id);
+auth = encodebase64(username+":"+password);
+headers = dict("string");
+put (headers , "Authorization", "Basic "+auth);
+put (headers , "Accept", "application/json");
+put (headers , "Content-Type", "application/vnd.oracle.adf.action+json");
+url = fusionUrl + "/crmRestApi/resources/latest/accounts/action/getFinancialCustomerInfo";
+restResponse = urldata(url, "POST", headers, jsontostr(payload), 100000);
+statusCode = get(restResponse,"Status-Code");
+if(statusCode <> "200"){
+  errorMsg = get(restResponse,"Error-Message");
+  return "1~_transaction_s_accountIntegrationResponse_t~" + errorMsg;
+}
+messageBody = get(restResponse,"Message-Body");
+if(isnull(messageBody)) {
+  errorMsg = "TCA Account Integration API returned no data";
+  return "1~_transaction_s_accountIntegrationResponse_t~" + errorMsg;
+}
+root_json=json(messageBody);
+result_json = jsonget(root_json,"result", "json");
+billToCustomer_json = jsonget(result_json,"BillToCustomer", "jsonarray");
+soldToCustomer_json = jsonget(result_json,"SoldToCustomer", "jsonarray");
+shipToCustomer_json = jsonget(result_json,"ShipToCustomer", "jsonarray");
+
+updateStr = stringbuilder();
+if(jsonarraysize(billToCustomer_json) >= 1) {
+  billToCustomer = jsonarrayget(billToCustomer_json, 0, "json");
+
+  BillingAccountId = jsonget(billToCustomer, "BillingAccountId", "string", "");
+  BillingAccountName = jsonget(billToCustomer, "BillingAccountName", "string", "");
+  BillingAccountSiteUseId = jsonget(billToCustomer, "BillingAccountSiteUseId", "string", "");
+  BillingAccountName = jsonget(billToCustomer, "BillingAccountName", "string", "");
+  AddressLine1 = jsonget(billToCustomer, "AddressLine1", "string", "");
+  City = jsonget(billToCustomer, "City", "string", "");
+  State = jsonget(billToCustomer, "State", "string", "");
+  PostalCode = jsonget(billToCustomer, "PostalCode", "string", "");
+  Country = jsonget(billToCustomer, "Country", "string", "");
+  PartyName = jsonget(billToCustomer, "PartyName", "string", "");
+
+  sbappend(updateStr, "1", "~", "_s_billToCustomerAccountID_t", "~", BillingAccountId, "|");
+  sbappend(updateStr, "1", "~", "_s_billToCustomerAccountName_t", "~", BillingAccountName, "|");
+  sbappend(updateStr, "1", "~", "billToSiteUseId_t", "~", BillingAccountSiteUseId, "|");
+  sbappend(updateStr, "1", "~", "_s_billTo_t_company_name", "~", BillingAccountName, "|");
+  sbappend(updateStr, "1", "~", "_s_billTo_t_address", "~", AddressLine1, "|");
+  sbappend(updateStr, "1", "~", "_s_billTo_t_city", "~", City, "|");
+  sbappend(updateStr, "1", "~", "_s_billTo_t_state", "~", State, "|");
+  sbappend(updateStr, "1", "~", "_s_billTo_t_zip", "~", PostalCode, "|");
+  sbappend(updateStr, "1", "~", "_s_billTo_t_country", "~", Country, "|");
+} else {
+  errorMsg = "billToCustomer from TCA is required for FOM integration. ";
+}
+
+if(jsonarraysize(soldToCustomer_json) >= 1) {
+  soldToCustomer = jsonarrayget(soldToCustomer_json, 0, "json");
+
+  PartyId = jsonget(soldToCustomer, "PartyId", "string", "");
+  PartyName = jsonget(soldToCustomer, "PartyName", "string", "");
+  AddressId = jsonget(soldToCustomer, "AddressId", "string", "");
+  ContactFirstName = jsonget(soldToCustomer, "ContactFirstName", "string", "");
+  ContactLastName = jsonget(soldToCustomer, "ContactLastName", "string", "");
+  AddressLine1 = jsonget(soldToCustomer, "AddressLine1", "string", "");
+  City = jsonget(soldToCustomer, "City", "string", "");
+  State = jsonget(soldToCustomer, "State", "string", "");
+  PostalCode = jsonget(soldToCustomer, "PostalCode", "string", "");
+  Country = jsonget(soldToCustomer, "Country", "string", "");
+  ContactEmailAddress = jsonget(soldToCustomer, "ContactEmailAddress", "string", "");
+
+  sbappend(updateStr, "1", "~", "_s_soldToPartyID_t", "~", PartyId, "|");
+  sbappend(updateStr, "1", "~", "_s_soldToPartyName_t", "~", PartyName, "|");
+  sbappend(updateStr, "1", "~", "_s_soldToPartySiteID_t", "~", AddressId, "|");
+  sbappend(updateStr, "1", "~", "_s_soldToCustomerAccountID_t", "~", PartyId, "|");
+  sbappend(updateStr, "1", "~", "_soldTo_t_first_name", "~", ContactFirstName, "|");
+  sbappend(updateStr, "1", "~", "_soldTo_t_last_name", "~", ContactLastName, "|"); 
+  sbappend(updateStr, "1", "~", "_soldTo_t_company_name", "~", PartyName, "|");   
+  sbappend(updateStr, "1", "~", "_soldTo_t_address", "~", AddressLine1, "|");
+  sbappend(updateStr, "1", "~", "_soldTo_t_city", "~", City, "|");
+  sbappend(updateStr, "1", "~", "_soldTo_t_state", "~", State, "|");
+  sbappend(updateStr, "1", "~", "_soldTo_t_zip", "~", PostalCode, "|");
+  sbappend(updateStr, "1", "~", "_soldTo_t_country", "~", Country, "|");
+  sbappend(updateStr, "1", "~", "_soldTo_t_email", "~", ContactEmailAddress, "|");
+} else {
+  errorMsg = errorMsg + "soldToCustomer from TCA is required for FOM integration. ";
+}
+
+if(jsonarraysize(shipToCustomer_json) >= 1) {
+  shipToCustomer = jsonarrayget(shipToCustomer_json, 0, "json");
+
+  PartyId = jsonget(shipToCustomer, "PartyId", "string", "");
+  PartyName = jsonget(shipToCustomer, "PartyName", "string", "");
+  AddressId = jsonget(shipToCustomer, "AddressId", "string", "");
+  ContactFirstName = jsonget(shipToCustomer, "ContactFirstName", "string", "");
+  ContactLastName = jsonget(shipToCustomer, "ContactLastName", "string", "");
+  AddressLine1 = jsonget(shipToCustomer, "AddressLine1", "string", "");
+  City = jsonget(shipToCustomer, "City", "string", "");
+  State = jsonget(shipToCustomer, "State", "string", "");
+  PostalCode = jsonget(shipToCustomer, "PostalCode", "string", "");
+  Country = jsonget(shipToCustomer, "Country", "string", "");
+  ContactEmailAddress = jsonget(shipToCustomer, "ContactEmailAddress", "string", "");
+
+  sbappend(updateStr, "1", "~", "_s_shipToPartyID_t", "~", PartyId, "|");
+  sbappend(updateStr, "1", "~", "_s_shipToPartySiteID_t", "~", AddressId, "|");
+  sbappend(updateStr, "1", "~", "_shipTo_t_first_name", "~", ContactFirstName, "|");
+  sbappend(updateStr, "1", "~", "_shipTo_t_last_name", "~", ContactLastName, "|"); 
+  sbappend(updateStr, "1", "~", "_shipTo_t_company_name", "~", PartyName, "|");    
+  sbappend(updateStr, "1", "~", "_shipTo_t_address", "~", AddressLine1, "|");
+  sbappend(updateStr, "1", "~", "_shipTo_t_city", "~", City, "|");
+  sbappend(updateStr, "1", "~", "_shipTo_t_state", "~", State, "|");
+  sbappend(updateStr, "1", "~", "_shipTo_t_zip", "~", PostalCode, "|");
+  sbappend(updateStr, "1", "~", "_shipTo_t_country", "~", Country, "|");
+  sbappend(updateStr, "1", "~", "_shipTo_t_email", "~", ContactEmailAddress, "|");
+} else {
+  errorMsg = errorMsg + "No shipToCustomer data from TCA API.";
+}
+sbappend(updateStr, "1~_transaction_s_accountIntegrationResponse_t~", errorMsg, "|");
+return sbtostring(updateStr);

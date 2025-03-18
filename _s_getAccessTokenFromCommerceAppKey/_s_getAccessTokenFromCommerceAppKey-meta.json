@@ -1,0 +1,20 @@
+{
+  "name" : "Get Access Token from Commerce App Key",
+  "variableName" : "_s_getAccessTokenFromCommerceAppKey",
+  "description" : "Retrieves Access Token from Oracle Commerce Cloud using registered CPQ Application Key.",
+  "libraryFunctions" : [ ],
+  "returnType" : "String",
+  "parameters" : [ {
+    "name" : "baseUrl",
+    "type" : "String"
+  }, {
+    "name" : "loginEndpoint",
+    "type" : "String"
+  }, {
+    "name" : "appKey",
+    "type" : "String"
+  } ],
+  "subDocAttributes" : [ ],
+  "mainDocAttributes" : [ ],
+  "systemAttributes" : [ ]
+}

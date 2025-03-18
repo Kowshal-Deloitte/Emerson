@@ -1,0 +1,4 @@
+if(isnull(contactName_t) OR contactName_t == "") {
+	return "1~contactName_t~" + (contactFirstName_t + " " +contactLastName_t);
+} 
+return "";

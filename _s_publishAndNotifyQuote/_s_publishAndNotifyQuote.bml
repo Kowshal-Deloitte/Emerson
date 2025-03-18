@@ -1,0 +1,57 @@
+returnString = "";
+
+LOGIN_ENDPOINT = "/ccapp/v1/login";
+NOTIFY_ENDPOINT = "/ccapp/v1/quotes/notify";
+
+connectionInfo = bmql("select password,requestUrl from integration.genericIntegration where name = 'OracleCommerceCloud'");
+baseUrl = "";
+appKey = "";
+//print connectionInfo;
+for info in connectionInfo{
+	appKey = get(info, "password");
+	baseUrl = get(info, "requestUrl");
+}
+if(baseUrl == "" OR appKey == ""){
+	throwerror("Cannot connect to partner site. Please check configuration and/or contact your system administrator.");
+}
+accessToken = commerce._s_getAccessTokenFromCommerceAppKey(baseUrl, LOGIN_ENDPOINT, appKey); // for Authentication
+ 
+quoteNotifyHeaders = dict("string");
+put(quoteNotifyHeaders, "Authorization", "Bearer " + accessToken);
+put(quoteNotifyHeaders, "Content-Type", "application/json");
+
+// Get Payload
+quoteNotifyPayload = commerce._s_generatePayloadForNotifyQuote(); 
+
+
+quoteNotifyUrl = "";
+if(endswith(baseUrl, "/") == startswith(NOTIFY_ENDPOINT, "/")){ 
+	quoteNotifyUrl = baseUrl + "/" + NOTIFY_ENDPOINT;
+} else {
+	quoteNotifyUrl = baseUrl + NOTIFY_ENDPOINT;
+}
+
+quoteNotifyResponse = urldata(quoteNotifyUrl, "POST", quoteNotifyHeaders, jsontostr(quoteNotifyPayload), 120000);
+//print quoteNotifyResponse;
+statusCode = get(quoteNotifyResponse,"Status-Code");
+if(statusCode == "200"){
+	messageBody = get(quoteNotifyResponse,"Message-Body");
+	success = jsonget(json(messageBody), "success", "boolean");
+	if(success){
+		if(NOT(_transaction_s_isPublished_t)){
+			returnString = returnString + "|1~_transaction_s_isPublished_t~true|";
+		}
+	} else {
+		throwerror("Notify Quote action failed from partner site.\nPlease contact your system administrator."); // placeholder
+	}
+} else{
+	if(statusCode =="-1"){
+		throwerror("The request is taking longer than usual.");
+	}else{
+		errorMsg = get(quoteNotifyResponse, "Error-Message");
+		//print errorMsg;
+		error = jsonget(json(errorMsg), "message");
+		throwerror("Notify Quote action failed with error: " + error +"\nPlease contact your system administrator."); // placeholder
+	} 
+}
+return returnString;

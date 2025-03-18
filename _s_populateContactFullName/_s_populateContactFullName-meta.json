@@ -1,0 +1,11 @@
+{
+  "name" : "Populate Contact Full Name",
+  "variableName" : "_s_populateContactFullName",
+  "description" : "Generates Contact full name with Contact First Name and Contact Last Name fields.",
+  "libraryFunctions" : [ ],
+  "returnType" : "String",
+  "parameters" : [ ],
+  "subDocAttributes" : [ ],
+  "mainDocAttributes" : [ "contactFirstName_t", "contactLastName_t", "contactName_t" ],
+  "systemAttributes" : [ ]
+}

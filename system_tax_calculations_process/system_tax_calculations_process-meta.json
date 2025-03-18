@@ -1,0 +1,26 @@
+{
+  "name" : "System Tax Calculation process",
+  "variableName" : "system_tax_calculations_process",
+  "description" : "Library Function to calculate the default taxes based on type of tax and total prices with/without tax.\nFunctions starting with \"system\" prefix shouldn't be overridden. This will enable availability of upgrades to system logic. Instead override the ones that have a \"custom\" prefix to customize the behavior.",
+  "libraryFunctions" : [ ],
+  "returnType" : "String",
+  "parameters" : [ {
+    "name" : "mainDocOutputAttrs",
+    "type" : "String Dictionary"
+  }, {
+    "name" : "subDocOutputAttrs",
+    "type" : "String Dictionary"
+  }, {
+    "name" : "quoteData",
+    "type" : "Anytype Dictionary"
+  }, {
+    "name" : "lineDict",
+    "type" : "Anytype Dictionary"
+  }, {
+    "name" : "extraParams",
+    "type" : "Anytype Dictionary"
+  } ],
+  "subDocAttributes" : [ ],
+  "mainDocAttributes" : [ "_transaction_document_number" ],
+  "systemAttributes" : [ ]
+}

@@ -1,0 +1,6 @@
+count = 0;
+for line in transactionLine{
+	count = count + 1;
+	break;
+}
+return count > 0;

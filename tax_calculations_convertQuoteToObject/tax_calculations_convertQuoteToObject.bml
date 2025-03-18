@@ -1,0 +1,51 @@
+mainDocDict = get(quoteData,_transaction_document_number, "dict<anytype>");
+v_freezePrice = (get(mainDocDict,"_transaction_freezePrice", "string") == "true");
+put(mainDocDict, "_transaction_tax_isTaxPresent_t",string(_transaction_tax_isTaxPresent_t));
+if(_transaction_tax_isTaxPresent_t){
+    put(mainDocDict, "_transaction_tax_isTaxInclusive_t", string(_transaction_tax_isTaxInclusive_t));
+    for line in transactionLine{
+        lineDict = get(quoteData,line._document_number, "dict<anytype>");
+        v__price_quantity = get(lineDict, "_price_quantity", "integer");
+            put(lineDict, "_tax_taxPrice_l",line._tax_taxPrice_l);
+            put(lineDict, "_tax_taxRollup_l",line._tax_taxPrice_l);
+            v_taxAmount_l = line._tax_taxPrice_l * v__price_quantity;
+            put(lineDict, "_tax_taxAmount_l", v_taxAmount_l);
+        if(v_freezePrice){
+            put(lineDict, "_tax_totalPrice_l",line._tax_totalPrice_l);
+            put(lineDict, "_tax_totalAmount_l",line._tax_totalAmount_l);
+            put(lineDict, "_tax_totalPriceMinusTax_l",line._tax_totalPriceMinusTax_l);
+            put(lineDict, "_tax_totalAmountMinusTax_l",line._tax_totalAmountMinusTax_l);
+            if(NOT(isnull(line._tax_calculation_info)) AND line._tax_calculation_info <> ""){
+            v_taxInfoJson = json(line._tax_calculation_info);
+                   
+            taxKeyArray = jsonkeys(v_taxInfoJson, true);
+            if(findinarray(taxKeyArray, "_tax_taxAmount_l")<> -1){
+                v_totalTaxAmount = jsonget(v_taxInfoJson, "_tax_taxAmount_l" ,"float");
+                put(lineDict, "_tax_taxAmount_l",v_totalTaxAmount);
+            }else{
+                v_totalTaxAmount = line._tax_taxPrice_l * v__price_quantity;
+                put(lineDict, "_tax_taxAmount_l",v_totalTaxAmount);
+            }
+            }
+        }
+        put(quoteData, line._document_number, lineDict);
+    }
+       
+    put(mainDocOutputAttrs, "_transaction_tax_totalTransactionValueIncTax_t", "float");
+    if(NOT(v_freezePrice)){
+        put(mainDocDict, "_transaction_tax_taxAmount_t", 0.0);
+       
+        put(mainDocOutputAttrs, "_transaction_tax_taxAmount_t", "float");
+        put(subDocOutputAttrs, "_tax_totalPrice_l", "float");
+        put(subDocOutputAttrs, "_tax_totalAmount_l", "float");
+        put(subDocOutputAttrs, "_tax_totalPriceMinusTax_l", "float");
+        put(subDocOutputAttrs, "_tax_totalAmountMinusTax_l", "float");
+        put(subDocOutputAttrs, "_tax_totalPriceRollup_l", "float");
+        put(subDocOutputAttrs, "_tax_totalAmountRollup_l", "float");
+        put(subDocOutputAttrs, "_tax_totalContractPriceRollup_l", "float");
+    } else {
+        put(mainDocDict, "_transaction_tax_taxAmount_t", _transaction_tax_taxAmount_t);
+    }
+    put(quoteData, _transaction_document_number, mainDocDict);
+}
+return "";

@@ -1,0 +1,11 @@
+{
+  "name" : "Price Guidance Lib Fun",
+  "variableName" : "priceGuidanceLibFun_c",
+  "description" : "",
+  "libraryFunctions" : [ ],
+  "returnType" : "String",
+  "parameters" : [ ],
+  "subDocAttributes" : [ "documentNumber_l", "_part_number", "listPrice_l", "_document_number", "_part_custom_field21" ],
+  "mainDocAttributes" : [ "customerID_t_c" ],
+  "systemAttributes" : [ "_system_buyside_id", "_system_company_name" ]
+}

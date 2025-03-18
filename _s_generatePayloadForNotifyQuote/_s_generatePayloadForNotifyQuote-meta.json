@@ -1,0 +1,11 @@
+{
+  "name" : "Generate Payload For Notify Quote",
+  "variableName" : "_s_generatePayloadForNotifyQuote",
+  "description" : "Generates payload for invoking Notify Quote Rest API on Oracle Commerce Cloud.",
+  "libraryFunctions" : [ ],
+  "returnType" : "Json",
+  "parameters" : [ ],
+  "subDocAttributes" : [ "_part_number", "_part_display_number", "_model_variable_name", "_model_name", "_price_quantity", "contractValue_l" ],
+  "mainDocAttributes" : [ "_transaction_s_contactPartyNumber_t", "contactFirstName_t", "contactLastName_t", "_transaction_customer_id", "_transaction_s_customerStatus_t", "contactEmailAddress_t", "transactionName_t", "createdDate_t", "createdBy_t", "totalContractValue_t", "bs_id", "currency_t", "totalContractDiscount_t", "totalOneTimeDiscount_t", "totalOneTimeListAmount_t", "totalOneTimeNetAmount_t", "owner_t", "_transaction_s_hostCompanyFullName_t" ],
+  "systemAttributes" : [ ]
+}
